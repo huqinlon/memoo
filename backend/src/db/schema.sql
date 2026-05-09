@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, email TEXT DEFAULT NULL, role TEXT DEFAULT 'user', avatar TEXT DEFAULT NULL, is_default_password INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS memos (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT DEFAULT '', content_type TEXT DEFAULT 'markdown', visibility TEXT DEFAULT 'public' CHECK(visibility IN ('public', 'private')), user_id INTEGER DEFAULT NULL, author_name TEXT DEFAULT '', cover_image TEXT DEFAULT NULL, is_pinned INTEGER DEFAULT 0, view_count INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, color TEXT DEFAULT '#2563eb', user_id INTEGER DEFAULT NULL, memo_count INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS memo_tags (memo_id INTEGER NOT NULL, tag_id INTEGER NOT NULL, PRIMARY KEY (memo_id, tag_id), FOREIGN KEY (memo_id) REFERENCES memos(id) ON DELETE CASCADE, FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS operation_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT DEFAULT '', action TEXT NOT NULL, target_type TEXT DEFAULT '', target_id TEXT DEFAULT '', detail TEXT DEFAULT '', ip TEXT DEFAULT '', created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_memos_user_id ON memos(user_id);
+CREATE INDEX IF NOT EXISTS idx_memos_visibility ON memos(visibility);
+CREATE INDEX IF NOT EXISTS idx_memos_created_at ON memos(created_at);
+CREATE INDEX IF NOT EXISTS idx_memo_tags_tag_id ON memo_tags(tag_id);
+CREATE TABLE IF NOT EXISTS permission_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, username TEXT DEFAULT '', action TEXT NOT NULL, target_type TEXT DEFAULT '', target_id TEXT DEFAULT '', result TEXT NOT NULL, detail TEXT DEFAULT '', ip TEXT DEFAULT '', created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_permission_logs_user_id ON permission_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_permission_logs_action ON permission_logs(action);
+CREATE INDEX IF NOT EXISTS idx_permission_logs_result ON permission_logs(result);
+CREATE INDEX IF NOT EXISTS idx_permission_logs_created_at ON permission_logs(created_at);
+CREATE TABLE IF NOT EXISTS site_icons (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, filename TEXT NOT NULL UNIQUE, original_name TEXT DEFAULT '', file_type TEXT NOT NULL, file_size INTEGER DEFAULT 0, width INTEGER DEFAULT 0, height INTEGER DEFAULT 0, usage_type TEXT DEFAULT 'favicon' CHECK(usage_type IN ('favicon', 'apple-touch', 'android-chrome', 'ms-tile', 'og-image', 'custom'), is_default INTEGER DEFAULT 0, sort_order INTEGER DEFAULT 0, created_by INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL);
+CREATE INDEX IF NOT EXISTS idx_site_icons_usage_type ON site_icons(usage_type);
+CREATE INDEX IF NOT EXISTS idx_site_icons_is_default ON site_icons(is_default);
